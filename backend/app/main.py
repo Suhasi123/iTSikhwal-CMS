@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from app.api.auth import router as auth_router
 
 app = FastAPI(
     title="iTSikhwal CMS API",
@@ -9,3 +10,8 @@ app = FastAPI(
 @app.get("/")
 def root():
     return {"message": "CMS Backend Running "}
+
+app.include_router(
+    auth_router,
+    prefix="/api"
+)
