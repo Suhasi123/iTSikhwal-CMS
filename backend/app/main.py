@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from app.api.auth import router as auth_router
 from app.api.categories import router as category_router
+from app.api.blogs import router as blog_router
 
 app = FastAPI(
     title="iTSikhwal CMS API",
@@ -19,5 +20,10 @@ app.include_router(
 
 app.include_router(
     category_router,
+    prefix="/api",
+)
+
+app.include_router(
+    blog_router,
     prefix="/api",
 )

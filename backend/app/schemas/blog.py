@@ -1,0 +1,73 @@
+from datetime import datetime
+
+from pydantic import BaseModel, ConfigDict
+
+from app.models.enums import BlogStatus
+
+
+class BlogBase(BaseModel):
+    title: str
+    excerpt: str | None = None
+    content: str
+
+    thumbnail_url: str | None = None
+    cover_image_url: str | None = None
+
+    status: BlogStatus = BlogStatus.DRAFT
+
+    meta_title: str | None = None
+    meta_description: str | None = None
+    canonical_url: str | None = None
+    seo_keywords: str | None = None
+
+    is_featured: bool = False
+    show_cta: bool = True
+
+    category_id: int
+
+
+class BlogCreate(BlogBase):
+    pass
+
+
+class BlogUpdate(BaseModel):
+    title: str | None = None
+    excerpt: str | None = None
+    content: str | None = None
+
+    thumbnail_url: str | None = None
+    cover_image_url: str | None = None
+
+    status: BlogStatus | None = None
+
+    meta_title: str | None = None
+    meta_description: str | None = None
+    canonical_url: str | None = None
+    seo_keywords: str | None = None
+
+    is_featured: bool | None = None
+    show_cta: bool | None = None
+
+    category_id: int | None = None
+
+
+class BlogResponse(BlogBase):
+    id: int
+
+    slug: str
+
+    reading_time: int
+
+    published_at: datetime | None
+
+    created_at: datetime
+
+    updated_at: datetime
+
+    author_id: int
+
+    model_config = ConfigDict(
+        from_attributes=True
+    )
+
+

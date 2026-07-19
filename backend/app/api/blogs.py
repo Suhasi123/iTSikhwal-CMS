@@ -1,0 +1,140 @@
+from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy.orm import Session
+
+from app.core.dependencies import get_current_user
+from app.database.session import get_db
+from app.models.user import User
+from app.schemas.blog import (
+    BlogCreate,
+    BlogResponse,
+    BlogUpdate,
+)
+from app.services.blog_service import BlogService
+
+router = APIRouter(
+    prefix="/blogs",
+    tags=["Blogs"],
+)
+
+
+@router.post(
+    "",
+    response_model=BlogResponse,
+    status_code=status.HTTP_201_CREATED,
+)
+def create_blog(
+    request: BlogCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+
+    try:
+        return BlogService.create_blog(
+            db=db,
+            blog_data=request,
+            author_id=current_user.id,
+        )
+
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e),
+        )
+    
+
+@router.get(
+    "",
+    response_model=list[BlogResponse],
+)
+def get_all_blogs(
+    db: Session = Depends(get_db),
+):
+
+    return BlogService.get_all_blogs(db)
+
+
+
+@router.get(
+    "/{blog_id}",
+    response_model=BlogResponse,
+)
+def get_blog(
+    blog_id: int,
+    db: Session = Depends(get_db),
+):
+
+    blog = BlogService.get_blog(
+        db,
+        blog_id,
+    )
+
+    if blog is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Blog not found",
+        )
+
+    return blog
+
+
+@router.put(
+    "/{blog_id}",
+    response_model=BlogResponse,
+)
+def update_blog(
+    blog_id: int,
+    request: BlogUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+
+    blog = BlogService.get_blog(
+        db,
+        blog_id,
+    )
+
+    if blog is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Blog not found",
+        )
+
+    try:
+        return BlogService.update_blog(
+            db,
+            blog,
+            request,
+        )
+
+    except ValueError as e:
+        raise HTTPException(
+            status_code=400,
+            detail=str(e),
+        )
+    
+
+@router.delete(
+    "/{blog_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+)
+def delete_blog(
+    blog_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+
+    blog = BlogService.get_blog(
+        db,
+        blog_id,
+    )
+
+    if blog is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Blog not found",
+        )
+
+    BlogService.delete_blog(
+        db,
+        blog,
+    )
