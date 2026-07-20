@@ -4,6 +4,7 @@ from app.api.categories import router as category_router
 from app.api.blogs import router as blog_router
 from app.api.uploads import router as upload_router
 from app.api.public import router as public_router
+from app.api.dashboard import router as dashboard_router
 
 
 app = FastAPI(
@@ -38,5 +39,10 @@ app.include_router(
 
 app.include_router(
     public_router,
+    prefix="/api"
+)
+
+app.include_router(
+    dashboard_router,
     prefix="/api"
 )
