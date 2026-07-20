@@ -6,7 +6,6 @@ from app.api.uploads import router as upload_router
 from app.api.public import router as public_router
 from app.api.dashboard import router as dashboard_router
 
-
 app = FastAPI(
     title="iTSikhwal CMS API",
     version="1.0.0"

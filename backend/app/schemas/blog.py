@@ -3,6 +3,7 @@ from datetime import datetime
 from pydantic import BaseModel, ConfigDict
 
 from app.models.enums import BlogStatus
+from app.schemas.public_blog import PaginationMeta
 
 
 class BlogBase(BaseModel):
@@ -71,3 +72,26 @@ class BlogResponse(BlogBase):
     )
 
 
+class AdminBlogCard(BaseModel):
+    id: int
+    title: str
+    slug: str
+
+    status: BlogStatus
+    is_featured: bool
+
+    category: str | None = None
+    author: str
+
+    created_at: datetime
+    updated_at: datetime
+    published_at: datetime | None = None
+
+    model_config = {
+        "from_attributes": True
+    }
+
+
+class AdminBlogListResponse(BaseModel):
+    items: list[AdminBlogCard]
+    pagination: PaginationMeta

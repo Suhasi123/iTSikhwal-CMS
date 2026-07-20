@@ -1,6 +1,8 @@
+import math
 from datetime import datetime, timezone
 
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
+from sqlalchemy import or_
 
 from app.models.blog import Blog
 from app.models.category import Category
@@ -177,3 +179,83 @@ class BlogService:
 
         db.delete(blog)
         db.commit()
+
+
+    @staticmethod
+    def get_blogs(
+        db: Session,
+        page: int = 1,
+        page_size: int = 10,
+        search: str | None = None,
+        status: BlogStatus | None = None,
+        category: str | None = None,
+    ):
+        query = (
+            db.query(Blog)
+            .options(
+                joinedload(Blog.author),
+                joinedload(Blog.category)
+            )
+        )
+
+        if search:
+            search = f"%{search}%"
+
+            query = query.filter(
+                or_(
+                    Blog.title.ilike(search),
+                    Blog.slug.ilike(search),
+                    Blog.excerpt.ilike(search),
+                )
+            )
+
+        if status:
+            query = query.filter(
+                Blog.status == status
+            )
+
+        if category:
+            query = (
+                query
+                .join(Category)
+                .filter(Category.slug == category)
+            )
+
+        total_items = query.count()
+
+        blogs = (
+            query
+            .order_by(Blog.updated_at.desc())
+            .offset((page - 1) * page_size)
+            .limit(page_size)
+            .all()
+        )
+
+        total_pages = math.ceil(total_items / page_size) if total_items else 1
+
+        return {
+            "items": [
+                {
+                    "id": blog.id,
+                    "title": blog.title,
+                    "slug": blog.slug,
+                    "status": blog.status,
+                    "is_featured": blog.is_featured,
+                    "category": blog.category.name if blog.category else None,
+                    "author": blog.author.name,
+                    "created_at": blog.created_at,
+                    "updated_at": blog.updated_at,
+                    "published_at": blog.published_at,
+                }
+                for blog in blogs
+            ],
+
+            "pagination": {
+                "page": page,
+                "page_size": page_size,
+                "total_items": total_items,
+                "total_pages": total_pages,
+                "has_next": page < total_pages,
+                "has_previous": page > 1,
+            },
+        }

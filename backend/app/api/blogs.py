@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.orm import Session
 
 from app.core.dependencies import get_current_user
@@ -9,7 +9,9 @@ from app.schemas.blog import (
     BlogResponse,
     BlogUpdate,
 )
+from app.models.enums import BlogStatus
 from app.services.blog_service import BlogService
+from app.schemas.blog import AdminBlogListResponse
 
 router = APIRouter(
     prefix="/blogs",
@@ -44,14 +46,26 @@ def create_blog(
 
 @router.get(
     "",
-    response_model=list[BlogResponse],
+    response_model=AdminBlogListResponse,
 )
-def get_all_blogs(
+def get_blogs(
+    page: int = Query(1, ge=1),
+    page_size: int = Query(10, ge=1, le=100),
+    search: str | None = Query(None),
+    status: BlogStatus | None = Query(None),
+    category: str | None = Query(None),
+
     db: Session = Depends(get_db),
+    current_user=Depends(get_current_user),
 ):
-
-    return BlogService.get_all_blogs(db)
-
+    return BlogService.get_blogs(
+        db=db,
+        page=page,
+        page_size=page_size,
+        search=search,
+        status=status,
+        category=category,
+    )
 
 
 @router.get(
