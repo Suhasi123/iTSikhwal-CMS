@@ -11,7 +11,7 @@ from app.schemas.blog import (
 )
 from app.models.enums import BlogStatus
 from app.services.blog_service import BlogService
-from app.schemas.blog import AdminBlogListResponse
+from app.schemas.blog import AdminBlogListResponse, FeatureBlogRequest
 
 router = APIRouter(
     prefix="/blogs",
@@ -187,4 +187,18 @@ def restore_blog(
     return BlogService.restore_blog(
         db,
         blog_id,
+    )
+
+
+@router.patch("/{blog_id}/feature")
+def feature_blog(
+    blog_id: int,
+    request: FeatureBlogRequest,
+    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user),
+):
+    return BlogService.feature_blog(
+        db=db,
+        blog_id=blog_id,
+        is_featured=request.is_featured,
     )

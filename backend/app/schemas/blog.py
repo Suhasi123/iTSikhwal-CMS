@@ -95,3 +95,7 @@ class AdminBlogCard(BaseModel):
 class AdminBlogListResponse(BaseModel):
     items: list[AdminBlogCard]
     pagination: PaginationMeta
+
+
+class FeatureBlogRequest(BaseModel):
+    is_featured: bool

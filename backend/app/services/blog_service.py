@@ -364,3 +364,36 @@ class BlogService:
         return {
             "message": "Blog restored successfully"
         }
+    
+
+    @staticmethod
+    def feature_blog(
+        db: Session,
+        blog_id: int,
+        is_featured: bool,
+    ):
+        blog = BlogService._get_blog_or_404(
+            db,
+            blog_id,
+        )
+
+        if blog.is_featured == is_featured:
+            state = "featured" if is_featured else "not featured"
+
+            raise HTTPException(
+                status_code=400,
+                detail=f"Blog is already {state}"
+            )
+        
+        blog.is_featured = is_featured
+
+        db.commit()
+        db.refresh(blog)
+
+        return {
+            "message": (
+                "Blog featured successfully"
+                if is_featured
+                else "Blog unfeatured successfully"
+            )
+        }
