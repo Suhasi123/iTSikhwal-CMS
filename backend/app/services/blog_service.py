@@ -1,5 +1,6 @@
 import math
 from datetime import datetime, timezone
+from fastapi import HTTPException
 
 from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import or_
@@ -24,6 +25,26 @@ class BlogService:
     @staticmethod
     def get_blog(db: Session, blog_id: int):
         return db.get(Blog, blog_id)
+    
+    @staticmethod
+    def _get_blog_or_404(
+        db: Session,
+        blog_id: int,
+    ) -> Blog:
+
+        blog = (
+            db.query(Blog)
+            .filter(Blog.id == blog_id)
+            .first()
+        )
+
+        if blog is None:
+            raise HTTPException(
+                status_code=404,
+                detail="Blog not found"
+            )
+
+        return blog
 
     @staticmethod
     def get_blog_by_slug(db: Session, slug: str):
@@ -49,9 +70,6 @@ class BlogService:
             db,
             blog_data.title,
         )
-
-        if BlogService.get_blog_by_slug(db, slug):
-            raise ValueError("Blog with this title already exists")
 
         published_at = None
 
@@ -107,10 +125,16 @@ class BlogService:
 
         if blog_data.title is not None:
             blog.title = blog_data.title
-            blog.slug = BlogService.generate_unique_slug(
-                db,
-                blog_data.title,
-            )
+            if (
+                blog_data.title is not None
+                and blog.title != blog_data.title
+            ):
+                blog.title = blog_data.title
+
+                blog.slug = BlogService.generate_unique_slug(
+                    db,
+                    blog_data.title,
+                )
 
         if blog_data.excerpt is not None:
             blog.excerpt = blog_data.excerpt
@@ -258,4 +282,85 @@ class BlogService:
                 "has_next": page < total_pages,
                 "has_previous": page > 1,
             },
+        }
+    
+
+    @staticmethod
+    def publish_blog(
+        db: Session,
+        blog_id: int,
+    ):
+        blog = BlogService._get_blog_or_404(
+            db,
+            blog_id,
+        )
+                
+        if blog.status == BlogStatus.PUBLISHED:
+            raise HTTPException(
+                status_code=400,
+                detail="Blog is already published"
+            )
+        
+        blog.status = BlogStatus.PUBLISHED
+
+        if blog.published_at is None:
+            blog.published_at = datetime.now(timezone.utc)
+
+        db.commit()
+        db.refresh(blog)
+
+        return {
+            "message": "Blog published successfully"
+        }
+    
+
+    @staticmethod
+    def archive_blog(
+        db: Session,
+        blog_id: int,
+    ):
+        blog = BlogService._get_blog_or_404(
+            db,
+            blog_id
+        )
+
+        if blog.status == BlogStatus.ARCHIVED:
+            raise HTTPException(
+                status_code=400,
+                detail="Blog is already archived"
+            )
+        
+        blog.status = BlogStatus.ARCHIVED
+
+        db.commit()
+        db.refresh(blog)
+
+        return {
+            "message": "Blog archived successfully"
+        }
+    
+
+    @staticmethod
+    def restore_blog(
+        db: Session,
+        blog_id: int,
+    ):
+        blog = BlogService._get_blog_or_404(
+            db,
+            blog_id,
+        )
+
+        if blog.status != BlogStatus.ARCHIVED:
+            raise HTTPException(
+                status_code=400,
+                detail="Only archived blogs can be restored"
+            )
+        
+        blog.status = BlogStatus.DRAFT
+
+        db.commit()
+        db.refresh(blog)
+
+        return {
+            "message": "Blog restored successfully"
         }

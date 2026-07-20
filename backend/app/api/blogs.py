@@ -152,3 +152,39 @@ def delete_blog(
         db,
         blog,
     )
+
+
+@router.patch("/{blog_id}/publish")
+def publish_blog(
+    blog_id: int,
+    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user),
+):
+    return BlogService.publish_blog(
+        db=db,
+        blog_id=blog_id,
+    )
+
+
+@router.patch("/{blog_id}/archive")
+def archive_blog(
+    blog_id: int,
+    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user),
+):
+    return BlogService.archive_blog(
+        db,
+        blog_id,
+    )
+
+
+@router.patch("/{blog_id}/restore")
+def restore_blog(
+    blog_id: int,
+    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user),
+):
+    return BlogService.restore_blog(
+        db,
+        blog_id,
+    )
