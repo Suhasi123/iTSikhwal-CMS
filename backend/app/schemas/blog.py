@@ -99,3 +99,7 @@ class AdminBlogListResponse(BaseModel):
 
 class FeatureBlogRequest(BaseModel):
     is_featured: bool
+
+class SlugAvailabilityResponse(BaseModel):
+    slug: str
+    available: bool

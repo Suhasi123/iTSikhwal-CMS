@@ -397,3 +397,22 @@ class BlogService:
                 else "Blog unfeatured successfully"
             )
         }
+    
+
+    @staticmethod
+    def check_slug_availability(
+        db: Session,
+        title: str,
+    ):
+        slug = generate_slug(title)
+
+        existing_blog = (
+            db.query(Blog)
+            .filter(Blog.slug == slug)
+            .first()
+        )
+
+        return {
+            "slug": slug,
+            "available": existing_blog is None,
+        }

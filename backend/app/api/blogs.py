@@ -11,7 +11,7 @@ from app.schemas.blog import (
 )
 from app.models.enums import BlogStatus
 from app.services.blog_service import BlogService
-from app.schemas.blog import AdminBlogListResponse, FeatureBlogRequest
+from app.schemas.blog import AdminBlogListResponse, FeatureBlogRequest, SlugAvailabilityResponse
 
 router = APIRouter(
     prefix="/blogs",
@@ -65,6 +65,22 @@ def get_blogs(
         search=search,
         status=status,
         category=category,
+    )
+
+
+@router.get(
+    "/check-slug",
+    response_model=SlugAvailabilityResponse,
+)
+def check_slug(
+    title: str = Query(..., min_length=1),
+
+    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user),
+):
+    return BlogService.check_slug_availability(
+        db=db,
+        title=title,
     )
 
 
