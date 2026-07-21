@@ -14,11 +14,13 @@ class BlogBase(BaseModel):
     thumbnail_url: str | None = None
     cover_image_url: str | None = None
 
+    thumbnail_public_id: str | None = None
+    cover_image_public_id: str | None = None
+
     status: BlogStatus = BlogStatus.DRAFT
 
     meta_title: str | None = None
     meta_description: str | None = None
-    canonical_url: str | None = None
     seo_keywords: str | None = None
 
     is_featured: bool = False
@@ -39,11 +41,13 @@ class BlogUpdate(BaseModel):
     thumbnail_url: str | None = None
     cover_image_url: str | None = None
 
+    thumbnail_public_id: str | None = None
+    cover_image_public_id: str | None = None
+
     status: BlogStatus | None = None
 
     meta_title: str | None = None
     meta_description: str | None = None
-    canonical_url: str | None = None
     seo_keywords: str | None = None
 
     is_featured: bool | None = None

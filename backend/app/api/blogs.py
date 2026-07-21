@@ -218,3 +218,27 @@ def feature_blog(
         blog_id=blog_id,
         is_featured=request.is_featured,
     )
+
+
+@router.delete("/{blog_id}/thumbnail")
+def delete_thumbnail(
+    blog_id: int,
+    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user),
+):
+    return BlogService.delete_thumbnail(
+        db,
+        blog_id,
+    )
+
+
+@router.delete("/{blog_id}/cover-image")
+def delete_cover_image(
+    blog_id: int,
+    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user),
+):
+    return BlogService.delete_cover_image(
+        db,
+        blog_id,
+    )

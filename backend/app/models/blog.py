@@ -56,6 +56,16 @@ class Blog(Base):
         nullable=True
     )
 
+    thumbnail_public_id: Mapped[str | None] = mapped_column(
+        String(500),
+        nullable=True
+    )
+
+    cover_image_public_id: Mapped[str | None] = mapped_column(
+        String(500),
+        nullable=True
+    )
+
     status: Mapped[BlogStatus] = mapped_column(
         Enum(BlogStatus),
         default=BlogStatus.DRAFT,
@@ -75,11 +85,6 @@ class Blog(Base):
 
     meta_description: Mapped[str | None] = mapped_column(
         Text,
-        nullable=True
-    )
-
-    canonical_url: Mapped[str | None] = mapped_column(
-        String(500),
         nullable=True
     )
 

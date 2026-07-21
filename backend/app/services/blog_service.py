@@ -10,6 +10,7 @@ from app.models.category import Category
 from app.models.enums import BlogStatus
 from app.utils.reading_time import calculate_reading_time
 from app.utils.slug import generate_slug
+from app.services.upload_service import UploadService
 
 
 class BlogService:
@@ -87,7 +88,8 @@ class BlogService:
             reading_time=calculate_reading_time(blog_data.content),
             meta_title=blog_data.meta_title,
             meta_description=blog_data.meta_description,
-            canonical_url=blog_data.canonical_url,
+            thumbnail_public_id=blog_data.thumbnail_public_id,
+            cover_image_public_id=blog_data.cover_image_public_id,
             seo_keywords=blog_data.seo_keywords,
             is_featured=blog_data.is_featured,
             show_cta=blog_data.show_cta,
@@ -151,14 +153,17 @@ class BlogService:
         if blog_data.cover_image_url is not None:
             blog.cover_image_url = blog_data.cover_image_url
 
+        if blog_data.thumbnail_public_id is not None:
+            blog.thumbnail_public_id = blog_data.thumbnail_public_id
+
+        if blog_data.cover_image_public_id is not None:
+            blog.cover_image_public_id = blog_data.cover_image_public_id
+
         if blog_data.meta_title is not None:
             blog.meta_title = blog_data.meta_title
 
         if blog_data.meta_description is not None:
             blog.meta_description = blog_data.meta_description
-
-        if blog_data.canonical_url is not None:
-            blog.canonical_url = blog_data.canonical_url
 
         if blog_data.seo_keywords is not None:
             blog.seo_keywords = blog_data.seo_keywords
@@ -416,3 +421,82 @@ class BlogService:
             "slug": slug,
             "available": existing_blog is None,
         }
+    
+
+    @staticmethod
+    def _delete_blog_image(
+        db: Session,
+        blog,
+        image_type: str,
+    ):
+        if image_type == "thumbnail":
+            public_id = blog.thumbnail_public_id
+            url_field = "thumbnail_url"
+            public_id_field = "thumbnail_public_id"
+            success_message = "Thumbnail deleted successfully"
+
+        elif image_type == "cover":
+            public_id = blog.cover_image_public_id
+            url_field = "cover_image_url"
+            public_id_field = "cover_image_public_id"
+            success_message = "Cover image deleted successfully"
+
+        else:
+            raise ValueError("Invalid image type")
+
+        if not public_id:
+            raise HTTPException(
+                status_code=400,
+                detail=f"{image_type.capitalize()} image not found"
+            )
+
+        result = UploadService.delete_image(public_id)
+
+        if result.get("result") != "ok":
+            raise HTTPException(
+                status_code=500,
+                detail="Failed to delete image from Cloudinary"
+            )
+
+        setattr(blog, url_field, None)
+        setattr(blog, public_id_field, None)
+
+        db.commit()
+        db.refresh(blog)
+
+        return {
+            "message": success_message
+        }
+
+    @staticmethod
+    def delete_thumbnail(
+        db: Session,
+        blog_id: int,
+    ):
+        blog = BlogService._get_blog_or_404(
+            db,
+            blog_id,
+        )
+
+        return BlogService._delete_blog_image(
+            db,
+            blog,
+            "thumbnail",
+        )
+    
+
+    @staticmethod
+    def delete_cover_image(
+        db: Session,
+        blog_id: int,
+    ):
+        blog = BlogService._get_blog_or_404(
+            db,
+            blog_id,
+        )
+
+        return BlogService._delete_blog_image(
+            db,
+            blog,
+            "cover",
+        )
