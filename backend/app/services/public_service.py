@@ -169,7 +169,6 @@ class PublicService:
             "seo": {
                 "title": blog.meta_title,
                 "description": blog.meta_description,
-                "canonical": blog.canonical_url,
                 "keywords": keywords,
             },
 
