@@ -85,6 +85,7 @@ class AdminBlogCard(BaseModel):
     is_featured: bool
 
     category: str | None = None
+    thumbnail_url: str | None = None
     author: str
 
     created_at: datetime

@@ -271,6 +271,7 @@ class BlogService:
                     "status": blog.status,
                     "is_featured": blog.is_featured,
                     "category": blog.category.name if blog.category else None,
+                    "thumbnail_url": blog.thumbnail_url,
                     "author": blog.author.name,
                     "created_at": blog.created_at,
                     "updated_at": blog.updated_at,
