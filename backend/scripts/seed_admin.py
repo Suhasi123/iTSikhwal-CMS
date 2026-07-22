@@ -11,8 +11,8 @@ from app.database.database import SessionLocal
 from app.models.user import User
 
 
-ADMIN_NAME = "Tarun Sikhwal"
-ADMIN_EMAIL = "tarun@itsikhwal.com"
+ADMIN_NAME = "admin_name"
+ADMIN_EMAIL = "admin_email"
 ADMIN_PASSWORD = "Admin@123"
 
 
